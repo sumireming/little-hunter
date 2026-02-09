@@ -16,8 +16,12 @@
     "url": "https://github.com/sumireming/little-hunter/issues"
   },
   "homepage": "https://github.com/sumireming/little-hunter#readme",
+  "engines": {
+    "node": "16.20.2",
+    "npm": "8.19.4"
+  },
   "dependencies": {
-    "puppeteer": "^24.35.0",
-    "puppeteer-core": "^24.35.0"
+    "puppeteer": "^19.11.1",
+    "puppeteer-core": "^19.11.1"
   }
 }
