@@ -1,11 +1,10 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 async function get_xhs_note_data(url) {
   console.log('开始处理请求:', url);
   console.log('当前环境:', {
     NODE_ENV: process.env.NODE_ENV,
-    CHROME_PATH: process.env.CHROME_PATH,
     OS: process.platform,
     ARCH: process.arch,
     NODE_VERSION: process.version
@@ -14,38 +13,14 @@ async function get_xhs_note_data(url) {
   let browser = null;
   
   try {
-    // 可配置的 Chrome 路径
-    let chromePath = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-    console.log('使用 Chrome 路径:', chromePath);
-    
-    // 检查 Chrome 路径是否存在
-    if (fs.existsSync(chromePath)) {
-      console.log('Chrome 路径存在');
-    } else {
-      console.error('Chrome 路径不存在:', chromePath);
-      // 尝试查找其他可能的 Chrome 路径
-      const possiblePaths = [
-        '/usr/bin/google-chrome',
-        '/usr/bin/chromium',
-        '/usr/bin/chromium-browser',
-        '/opt/google/chrome/chrome'
-      ];
-      for (const path of possiblePaths) {
-        if (fs.existsSync(path)) {
-          console.log('找到备用 Chrome 路径:', path);
-          chromePath = path;
-          break;
-        }
-      }
-    }
-    
-    console.log('启动 Chrome 浏览器...');
+    console.log('启动内置 Chromium 浏览器...');
     browser = await puppeteer.launch({
-      executablePath: chromePath,
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
       dumpio: true // 输出浏览器的控制台信息
     });
+    console.log('内置 Chromium 浏览器启动成功');
+
     
     console.log('浏览器启动成功');
     
