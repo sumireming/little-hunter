@@ -75,10 +75,6 @@ async function get_xhs_note_data(url) {
     await navigationPromise;
     console.log('导航完成');
     
-    // 等待一段时间，确保页面完全加载
-    await page.waitForTimeout(2000);
-    console.log('等待页面稳定');
-    
     
     // 在页面上下文中执行代码，获取window对象下的数据
     const windowData = await page.evaluate(() => {
