@@ -96,7 +96,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-const PORT = 18333;
+const PORT = 80;
 server.listen(PORT, () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);
 });
