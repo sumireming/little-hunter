@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
+const { validateUrl, getNoteFromHtml } = require('./html');
 
-async function get_xhs_note_data(url) {
+async function get_xhs_note_data_browser(url) {
   console.log('开始处理请求:', url);
   console.log('当前环境:', {
     NODE_ENV: process.env.NODE_ENV,
@@ -76,6 +76,10 @@ async function get_xhs_note_data(url) {
     console.log('导航完成');
     
     
+    if (new URL(page.url()).pathname.includes('/website-login/captcha')) {
+      throw new Error('小红书要求安全验证');
+    }
+
     // 在页面上下文中执行代码，获取window对象下的数据
     const windowData = await page.evaluate(() => {
       try {
@@ -113,7 +117,7 @@ async function get_xhs_note_data(url) {
           let xhs_note_id = note_data.noteId;
 
           let result = {
-            xhs_user_id: data.realUserId,
+            xhs_user_id: note_data.user?.userId || data.realUserId,
             xhs_note_id,
             note_data
           };
@@ -176,6 +180,28 @@ async function get_xhs_note_data(url) {
       stack: error.stack
     };
   }
+}
+
+async function get_xhs_note_data(url) {
+  try { validateUrl(url); } catch (error) { return { error: error.message }; }
+  // 紧急切回原浏览器方式：XHS_FETCH_MODE=browser；html 模式可用于服务器验证。
+  if (process.env.XHS_FETCH_MODE === 'browser') return get_xhs_note_data_browser(url);
+  let htmlError;
+  try {
+    const result = await getNoteFromHtml(url);
+    console.log('[xhsnote] HTML 解析成功', { noteId: result.xhs_note_id });
+    return result;
+  } catch (error) {
+    htmlError = error.message;
+    console.log('[xhsnote] HTML 解析失败', { error: htmlError });
+  }
+  // 遇到明确的安全验证时停止，不反复启动浏览器请求验证页。
+  if (process.env.XHS_FETCH_MODE === 'html' || htmlError === '小红书要求安全验证') {
+    return { error: htmlError };
+  }
+  const result = await get_xhs_note_data_browser(url);
+  if (result.error) return { ...result, html_error: htmlError };
+  return result;
 }
 
 module.exports =  {
